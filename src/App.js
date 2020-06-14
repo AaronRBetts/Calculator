@@ -122,6 +122,10 @@ export default class App extends Component {
     this.handleKeyPress = this.handleKeyPress.bind(this);
   }
 
+  componentDidMount() {
+    document.addEventListener("keydown", this.handleKeyPress);
+  }
+
   handleInput = (input, type) => {
     console.log('input: ' + input, 'type: ' + type)
     // determine the type of input
@@ -198,16 +202,16 @@ export default class App extends Component {
     this.setState({
       equationOperator: input,
     })
+    const outcome = this.calcOutcome(this.state.storedVal, this.state.equationOperator, this.state.currentVal)
     // If there's an input, store input and continue with second part of equation
-    if (this.state.currentVal !== 0) {
+    if (this.state.currentVal !== 0 || this.state.output === 0) {
       console.log('setting stored value = currentVal')
       this.setState({
         storedVal: this.state.currentVal,
       })
     }
     // if a valid equation exists, calculate and continue
-    const outcome = this.calcOutcome(this.state.storedVal, this.state.equationOperator, this.state.currentVal)
-    if (outcome !== this.output && this.state.currentVal !== 0) {
+    else if (outcome !== this.output && this.state.currentVal !== 0) {
       console.log('valid equation, setting storedVal and output to equation')
       this.setState({
         storedVal: outcome,
@@ -263,6 +267,7 @@ export default class App extends Component {
   }
 
   handleKeyPress(e) {
+    console.log('key pressed: ' + e.value)
     // Check if key pressed is in calc buttons array
     var result = buttonObjects.find(obj => {
       return obj.keyCode === e.keyCode
@@ -275,7 +280,6 @@ export default class App extends Component {
   }
 
   render() {
-    document.addEventListener("keydown", this.handleKeyPress)
     return (
       <div id="calc" className="calculator">
         <div className="display">
