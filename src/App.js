@@ -5,87 +5,104 @@ const buttonObjects = [
   {
     value: '+',
     id: 'add',
-    type: 'operator'
+    type: 'operator',
+    keyCode: 107
   },
   {
     value: '-',
     id: 'subtract',
-    type: 'operator'
+    type: 'operator',
+    keyCode: 109
   },
   {
     value: '*',
     id: 'multiply',
-    type: 'operator'
+    type: 'operator',
+    keyCode: 106
   },
   {
     value: '/',
     id: 'divide',
-    type: 'operator'
+    type: 'operator',
+    keyCode: 111
   },
   {
     value: 7,
     id: 'seven',
-    type: 'num'
+    type: 'num',
+    keyCode: 103
   },
   {
     value: 8,
     id: 'eight',
-    type: 'num'
+    type: 'num',
+    keyCode: 104
   },
   {
     value: 9,
     id: 'nine',
-    type: 'num'
+    type: 'num',
+    keyCode: 105
   },
   {
     value: 4,
     id: 'four',
-    type: 'num'
+    type: 'num',
+    keyCode: 100
   },
   {
     value: 5,
     id: 'five',
-    type: 'num'
+    type: 'num',
+    keyCode: 101
   },
   {
     value: 6,
     id: 'six',
-    type: 'num'
+    type: 'num',
+    keyCode: 102
   },
   {
     value: 1,
     id: 'one',
-    type: 'num'
+    type: 'num',
+    keyCode: 97
   },
   {
     value: 2,
     id: 'two',
-    type: 'num'
+    type: 'num',
+    keyCode: 98
   },
   {
     value: 3,
     id: 'three',
-    type: 'num'
+    type: 'num',
+    keyCode: 99
   },
   {
     value: 0,
     id: 'zero',
-    type: 'num'
+    type: 'num',
+    keyCode: 96
   },
   {
     value: '.',
     id: 'decimal',
-    type: 'decimal'
+    type: 'decimal',
+    keyCode: 110
   },
   {
     value: 'clear',
     id: 'clear',
-    type: 'clear'
+    type: 'clear',
+    keyCode: 8
   },
   {
     value: '=',
     id: 'equals',
-    type: 'equals'
+    type: 'equals',
+    keyCode: 13
   }
 ];
 
@@ -102,9 +119,11 @@ export default class App extends Component {
       negNum: false,
       emptyDecimals: ''
     }
+    this.handleKeyPress = this.handleKeyPress.bind(this);
   }
 
   handleInput = (input, type) => {
+    console.log('input: ' + input, 'type: ' + type)
     // determine the type of input
     if (type === 'num') {
       this.handleDigitInput(input);
@@ -132,7 +151,7 @@ export default class App extends Component {
   }
 
   handleDigitInput(input) {
-    console.log('neg num? ' + this.state.negNum)
+    console.log('digit input: ' + input)
     let newVal;
     if (this.state.wholeNum === true) {
       // If there is no decimal point
@@ -166,7 +185,6 @@ export default class App extends Component {
     })
     // if a value is entered after a calculation has just been made
     if (this.calcOutcome(this.state.storedVal, this.state.equationOperator, this.state.currentVal) === this.state.output) {
-      console.log('enetered value immediately after calc')
       this.setState({
         currentVal: newVal,
         output: ''
@@ -244,7 +262,20 @@ export default class App extends Component {
     });
   }
 
+  handleKeyPress(e) {
+    // Check if key pressed is in calc buttons array
+    var result = buttonObjects.find(obj => {
+      return obj.keyCode === e.keyCode
+    });
+
+    if(result) {
+      // handle input if key pressed is on calculator
+      this.handleInput(result.value, result.type);
+    }
+  }
+
   render() {
+    document.addEventListener("keydown", this.handleKeyPress)
     return (
       <div id="calc" className="calculator">
         <div className="display">
