@@ -117,7 +117,9 @@ export default class App extends Component {
       output: '',
       equationOperator: '',
       negNum: false,
-      emptyDecimals: ''
+      emptyDecimals: '',
+      equationComplete: false,
+      prevPressed: ''
     }
     this.handleKeyPress = this.handleKeyPress.bind(this);
   }
@@ -131,12 +133,14 @@ export default class App extends Component {
     // determine the type of input
     if (type === 'num') {
       this.handleDigitInput(input);
-    } else if (input === '-' && this.state.currentVal === 0) {
+    } else if (input === '-' && this.state.currentVal === 0 && this.state.prevPressed !== "operator") {
       this.setState({
         negNum: true
       })
-    }else if (type === 'operator') {
+    }else if (type === 'operator' && this.state.prevPressed !== 'operator' && this.state.prevPressed !== '') {
       this.handleOperator(input);
+    } else if (type === 'operator' && this.state.prevPressed === 'operator') {
+      this.swapOperator(input);
     } else if (type === 'decimal' && this.state.wholeNum === true) {
       this.setState({
         wholeNum: false,
@@ -145,6 +149,7 @@ export default class App extends Component {
     } else if (type === 'equals') {
       this.setState({
         output: this.calcOutcome(this.state.storedVal, this.state.equationOperator, this.state.currentVal),
+        equationComplete: true
       })
     } else if (type === 'clear') {
       this.setState({
@@ -152,6 +157,9 @@ export default class App extends Component {
       })
       this.resetCalc();
     }
+    this.setState({
+      prevPressed: type
+    })
   }
 
   handleDigitInput(input) {
@@ -187,13 +195,6 @@ export default class App extends Component {
     this.setState({
       currentVal: newVal
     })
-    // if a value is entered after a calculation has just been made
-    if (this.calcOutcome(this.state.storedVal, this.state.equationOperator, this.state.currentVal) === this.state.output) {
-      this.setState({
-        currentVal: newVal,
-        output: ''
-      })
-    }
     console.log(newVal)
   }
 
@@ -204,7 +205,7 @@ export default class App extends Component {
     })
     const outcome = this.calcOutcome(this.state.storedVal, this.state.equationOperator, this.state.currentVal)
     // If there's an input, store input and continue with second part of equation
-    if (this.state.currentVal !== 0 || this.state.output === 0) {
+    if (this.state.currentVal !== 0) {
       console.log('setting stored value = currentVal')
       this.setState({
         storedVal: this.state.currentVal,
@@ -222,12 +223,20 @@ export default class App extends Component {
         negNum: false,
       })
     }
+    // if an operator is entered after a calculation has just been made
+    if (this.state.equationComplete) {
+      this.setState({
+        storedVal: this.state.output,
+        output: ''
+      })
+    }
 
     this.setState({
       currentVal: 0,
       belowZeroDivider: 10,
       wholeNum: true,
-      negNum: false
+      negNum: false,
+      equationComplete: false
     })
   }
 
@@ -253,6 +262,12 @@ export default class App extends Component {
     return outcome;
   }
 
+  swapOperator(input) {
+    this.setState({
+      operator: input
+    })
+  }
+
   resetCalc() {
     console.log('calculator reset')
     // restore calculator to initial state
@@ -263,6 +278,8 @@ export default class App extends Component {
       wholeNum: true,
       negNum: false,
       equationOperator: '',
+      equationComplete: false,
+      prevPressed: ''
     });
   }
 
@@ -282,25 +299,29 @@ export default class App extends Component {
   render() {
     return (
       <div id="calc" className="calculator">
-        <div className="display">
-          <p style={{display: this.state.storedVal !== 0 ? 'initial' : 'none'}}>
-            {this.state.storedVal}
-            {this.state.storedVal === 0 ? '' : this.state.emptyDecimals}</p>
-          <p style={{display: this.state.equationOperator !== '' ? 'initial' : 'none'}}>
-            {this.state.equationOperator}</p>
-          <p style={{visibility: this.state.currentVal !== 0 ? 'visible' : 'hidden'}}>
-            {this.state.currentVal}
-            {this.state.currentVal === 0 ? '' : this.state.emptyDecimals}</p>
+        <div className="display-wrapper">
+          <div className="display">
+            <p style={{display: this.state.storedVal !== 0 ? 'initial' : 'none'}}>
+              {this.state.storedVal}
+              {this.state.storedVal === 0 ? '' : this.state.emptyDecimals}</p>
+            <p style={{display: this.state.equationOperator !== '' ? 'initial' : 'none'}}>
+              {this.state.equationOperator}</p>
+            <p style={{visibility: this.state.currentVal !== 0 ? 'visible' : 'hidden'}}>
+              {this.state.currentVal}
+              {this.state.currentVal === 0 ? '' : this.state.emptyDecimals}</p>
+          </div>
         </div>
         <div className="calculator-pad">
           {buttonObjects.map((key, idx) => (
             <button key={idx} id={key.id} onClick={() => this.handleInput(key.value, key.type)}>{key.value}</button>
           ))}
         </div>
-        <div className="display">
-          <p id="display">
-            {this.state.output !== '' && this.state.storedVal !== 0 ? this.state.output : this.state.currentVal}
-            {this.state.currentVal === 0 ? '' : this.state.emptyDecimals}</p>
+        <div className="display-wrapper">
+          <div className="display">
+            <p id="display">
+              {this.state.output !== '' && this.state.storedVal !== 0 ? this.state.output : this.state.currentVal}
+              {this.state.currentVal === 0 ? '' : this.state.emptyDecimals}</p>
+          </div>
         </div>
       </div>
     )
